@@ -1,0 +1,100 @@
+{
+  "mutations": [
+    {
+      "title": "init",
+      "params": [
+        "foo",
+        "bar"
+      ],
+      "content": [
+        {
+          "ajax": {
+            "method": "get",
+            "url": "/ping",
+            "mutation": "init",
+            "params": [
+              "foo",
+              "bar"
+            ],
+            "then": [
+              {
+                "state": "state.foo",
+                "value": "'bar'"
+              }
+            ]
+          }
+        },
+        {
+          "set": [
+            {
+              "state": "state.foo",
+              "value": "'bar'"
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "templates": [
+    {
+      "title": "app",
+      "root": "div",
+      "content": [
+        {
+          "tag": "ajaxButton"
+        },
+        {
+          "tag": "div",
+          "attributes": [
+            {
+              "key": "v-text",
+              "value": "'...'"
+            },
+            {
+              "key": "v-if",
+              "value": "$store.state.ajax.preloader > 0"
+            }
+          ]
+        },
+        {
+          "tag": "div",
+          "attributes": [
+            {
+              "key": "class",
+              "value": "col-xs-12 col-sm-6 col-md-4"
+            },
+            {
+              "key": "v-text",
+              "value": "$store.state.ajaxErr"
+            }
+          ]
+        }
+      ],
+      "tag": "div",
+      "rootAttributes": [
+        {
+          "key": "class",
+          "value": "container"
+        }
+      ]
+    },
+    {
+      "title": "ajaxButton",
+      "root": "button",
+      "rootAttributes": [
+        {
+          "key": "@click",
+          "value": "$store.commit('init')"
+        },
+        {
+          "key": "v-text",
+          "value": "'ajax'"
+        },
+        {
+          "key": "class",
+          "value": "btn btn-primary"
+        }
+      ]
+    }
+  ]
+}

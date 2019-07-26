@@ -1,0 +1,162 @@
+{foreach $ajax as $request}
+function ajax_{$request['title']}(state, value) {
+{if $request['method'] === 'delete'}	var id = value.id
+{/if}	return $.ajax({ method: '{$request['method']}', url: `${l}apiUrl{r}{$request['url']|replace,'{','${'}`{if $request['data']}, data: {$request['data']|noescape}{/if}, headers: {
+		Authorization: state.authToken || ''
+	}})
+}
+{/foreach}
+function ajax_postFileUpload(state, value) {
+	var formData = new FormData();
+	formData.append('file', value);
+	return $.ajax({ method: 'post', url: `${l}apiUrl{r}/files`, data: formData, 
+		processData: false,
+		contentType: false,
+		headers: {
+			Authorization: state.authToken || ''
+		}
+	})
+}
+
+const state = {
+	updateHack: false,
+	preloader: 0,
+	l: null,
+	lang: { en: {} }
+}
+
+{foreach $languages as $language}
+DotObject.str('lang.{$language['language']}.{$language['code']|replaceRE,'/^\.l\./', ''}', "{$language['phrase']}", state);
+{/foreach}
+DotObject.str('lang.en.week.Mon', "Monday", state);
+DotObject.str('lang.cs.week.Mon', "Pondělí", state);
+DotObject.str('lang.en.week.Tue', "Tuesday", state);
+DotObject.str('lang.cs.week.Tue', "Úterý", state);
+DotObject.str('lang.en.week.Wed', "Wednesday", state);
+DotObject.str('lang.cs.week.Wed', "Středa", state);
+DotObject.str('lang.en.week.Thu', "Thursday", state);
+DotObject.str('lang.cs.week.Thu', "Čtvrtek", state);
+DotObject.str('lang.en.week.Fri', "Friday", state);
+DotObject.str('lang.cs.week.Fri', "Pátek", state);
+DotObject.str('lang.en.week.Sat', "Saturday", state);
+DotObject.str('lang.cs.week.Sat', "Sobota", state);
+DotObject.str('lang.en.week.Sun', "Sunday", state);
+DotObject.str('lang.cs.week.Sun', "Neděle", state);
+
+{foreach $structure['data'] as $data}
+DotObject.str('{$data['path']}', {$data['value']}, state);
+{/foreach}
+
+state.language = 'cs'
+state.l = state.lang[state.language]
+state.focus = null
+
+const store = new Vuex.Store({
+	state,
+	mutations: {
+		'initFromGet': function(state, payload) {
+			var queryDict = {};
+			var setFromUrl = function(item) {
+				[key, value] = item.split("=")
+				DotObject.str(key, value, state);
+			}
+			document.cookie.split("; ").forEach(setFromUrl)
+			location.search.substr(1).split("&").forEach(setFromUrl)
+		},
+		'function': function(state, payload) {
+		},
+		'input': function(state, payload) {
+			eval(payload.path + " = \'" + payload.value + "\'");
+			state.updateHack = !state.updateHack
+		},
+		'preloaderAdd': function(state) {
+			state.preloader ++
+		},
+		'preloaderSub': function(state) {
+			state.preloader --
+		},
+		'postFileUpload': function(state) {
+			$('[type="file"]').val("");
+		},
+{foreach $structure['actions'] as $action}
+		'{$action['title']}': function(state, { value, res }) {
+			if (res === 0) {
+				res = "" + Math.floor(Math.random() * 1000)
+			}
+{foreach $action['changes'] as $change}
+			{if $change['value'] === 'delete'}var {$change['path']|replaceRE,'/\[.*/', ''} = Object.assign({}, state.{$change['path']|replaceRE,'/\[.*/', ''})
+			delete {$change['path']}
+			state.{$change['path']|replaceRE,'/\[.*/', ''} = {$change['path']|replaceRE,'/\[.*/', ''}{elseif 
+				preg_match('/\[.*\]$/', $change['path'])}helper = Object.assign({}, state.{$change['path']|replaceRE,'/\[.*/', ''})
+			helper{$change['path']|replaceRE,'/.*(\[.*)/', "$1"} = {$change['value']|store|noescape}
+			state.{$change['path']|replaceRE,'/\[.*/', ''} = helper{elseif $change['value'] === 'dummy'}state.{$change['path']}{elseif $change['path'] === 'focus'}$('[data-focus="{$change['value']|replace,'"', "'"}"]').focus(){else}state.{$change['path']} = {$change['value']|store|noescape}{/if}
+{/foreach}
+			state.updateHack = !state.updateHack
+		},
+{/foreach}
+	},
+	actions: {
+		'initFromGet': function({l}commit, dispatch, state{r}, value) {
+			var queryDict = {};
+			var data = document.cookie.split("; ").concat(location.search.substr(1).split("&"))
+			data.forEach(function(item) {
+				[key, value] = item.split("=")
+				queryDict[key] = value
+				if (key === 'authToken') {
+					dispatch('postLogin')
+				}
+			})
+			commit('initFromGet', queryDict)
+		},
+		'file-upload': function({l}commit, dispatch, state{r}, value) {
+			ajax_postFileUpload(state, value).done(res => {
+				commit('postFileUpload', { res, value })
+				commit('preloaderSub')
+			})
+		},
+{foreach $structure['actions'] as $action}
+{if $action['ajax']}
+		'{$action['title']}': function({l}commit, state{r}, value) {
+			commit('preloaderAdd')
+			ajax_{$action['ajax']}(state, value).done(res => {
+				commit('{$action['title']}', { res, value })
+				commit('preloaderSub')
+			}).fail(err => {
+
+			})
+		},
+{else}
+{/if}
+{/foreach}
+
+	}
+})
+
+{foreach $components as $component}
+Vue.component(`{$component['title']}`, {
+	props: [ "item", "static", "index" ],
+	methods: {
+		moment: function(value) { 
+			return window.moment(value) 
+		}
+	},
+	computed: {
+		state: function() {
+			return this.$store.state.updateHack ? this.$store.state : this.$store.state
+		}
+	},
+	template: `<{$component['tag']}{foreach $component['vueAttributes'] as $key => $value} {$key}="{$value|noescape}"{/foreach}{if $component['list']}>{if array_key_exists('prompt', $component)}<option value="null" v-text="{$component['prompt']}"></option>{/if}<{$component['nestedTag']} v-for="(item, id) of {$component['list']}" :key="item.id" {if $component['s-content']}v-text="{=implode(' + ', $component['s-content'])}" {/if}{if $component['s-value']}:value="{$component['s-value']}" {/if}{if $component['filter']}v-if="{$component['filter']|noescape}"{/if}{/if}{if $component['subcomponents']}>
+{foreach $component['subcomponents'] as $subcomponent}
+		<{$subcomponent}{if $component['list']} :index="id"{/if}{if $component['nest']} :item="{$component['nest']}"{/if}{if $component['static']} :static="{$component['static']}"{/if} />
+{/foreach}{if $component['list']}</{$component['nestedTag']}>{/if}
+	</{$component['tag']}>{elseif $component['list']}/></{$component['tag']}>{else}/>{/if}`
+})
+
+{/foreach}
+
+const VueApp = new Vue({ el: "#app", store,
+	mounted: function() {
+		this.$store.dispatch('initFromGet')
+	},
+
+});

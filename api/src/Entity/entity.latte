@@ -1,0 +1,24 @@
+<?php // Julie automatic generated file
+namespace App\Entity;
+
+
+class {$table|firstUpper}Entity extends BaseEntity {
+
+	const table = "{$table}";
+
+	public function __construct($attributes) {
+		$this->hydrate([
+{foreach $attributes as $attribute}{if $attribute['type'] !== 'id'}
+			{if $attribute['default']}"{$attribute['title']}" => {$attribute['default']},{/if}
+{/if}{/foreach}
+		]);
+		parent::__construct($attributes);
+	}
+
+{foreach $attributes as $attribute}
+	public function {$attribute['title']}($value = {$attribute['nullable'] ? 'false' : 'null'}) {
+		return $this->getOrSet(__FUNCTION__, $value, self::type_{$attribute['type']}, {$attribute['nullable'] ? 'false' : 'null'});
+	}
+
+{/foreach}
+}

@@ -1,0 +1,11 @@
+
+Warning: Invalid argument supplied for foreach() in /Users/zbynekrybicka/www/Magdalena/applications/SolarWindsChat/latte/app-front-style.latte--d701073c04.php on line 13
+
+@keyframes rotation {
+  from {
+    transform: rotate(0deg);
+  }
+  to {
+    transform: rotate(359deg);
+  }
+}

@@ -1,0 +1,15 @@
+{foreach $database as $table}
+CREATE TABLE `{$table['table']}` (
+	`id` INT UNSIGNED NOT NULL PRIMARY KEY AUTO_INCREMENT{foreach $table['attributes'] as $attribute},
+	`{$attribute['title']}` {if 
+		$attribute['type'] === 'id'}INT UNSIGNED{elseif
+		$attribute['type'] === 'string'}CHAR(255) CHARACTER SET utf8{else
+		}{$attribute['type']|upper}{/if
+	} {$attribute['nullable'] === 'true' ? 'NULL' : 'NOT NULL'}{if $attribute['default'] && $attribute['type'] !== 'id'} DEFAULT {$attribute['default']}{/if}{/foreach}
+);
+
+{/foreach}
+
+{foreach $database as $table}{foreach $table['attributes'] as $attribute}{if $attribute['type'] === 'id'}
+ALTER TABLE `{$table['table']}` ADD FOREIGN KEY (`{$attribute['title']}`) REFERENCES `{$attribute['default']}` (`id`);
+{/if}{/foreach}{/foreach}

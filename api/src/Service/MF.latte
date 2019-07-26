@@ -1,0 +1,23 @@
+<?php // Julie automatic generated file
+namespace App\Service;
+
+class MF {
+
+	public static $instance = null;
+
+	public static function create() {
+		if (!self::$instance) {
+			self::$instance =  new self();
+		}
+		return self::$instance;
+	}
+
+{foreach $services as $service}
+	public function {$service}Service() {
+		return {$service|firstUpper}Service::create();
+	}
+	
+{/foreach}
+
+
+}

@@ -1,0 +1,25 @@
+{foreach $style as $css}
+{foreach $css['attributes'] as $attribute}
+{if in_array($attribute['container'], ['sm', 'md', 'lg', 'xl'])}
+@media (min-width: {if $attribute['container'] === 'sm'}576px{elseif 
+	$attribute['container'] === 'md'}768px{elseif
+	$attribute['container'] === 'lg'}992px{elseif
+	$attribute['container'] === 'xl'}1200px{/if}) {
+{/if}
+	.{$css['component']}{$attribute['nested']|noescape} {
+		{$attribute['attribute']}: {$attribute['value']};
+	}
+{if in_array($attribute['container'], ['sm', 'md', 'lg', 'xl'])}
+}
+{/if}
+{/foreach}
+{/foreach}
+
+@keyframes rotation {
+  from {
+    transform: rotate(0deg);
+  }
+  to {
+    transform: rotate(359deg);
+  }
+}

@@ -1,0 +1,37 @@
+version: '2'
+
+services:
+  database:
+    image: mysql:5.7
+    restart: always
+    environment:
+      MYSQL_DATABASE: 'solarWindsChat'
+      MYSQL_ROOT_PASSWORD: 'solarWindsChat'
+    ports:
+      - '8904:3306'
+    volumes:
+      - ./api/db/import:/docker-entrypoint-initdb.d/
+      - ./api/db/data:/var/lib/mysql
+
+  composer:
+    restart: 'no'
+    image: composer:latest
+    command: update
+    volumes:
+      - ./api:/app
+
+
+  api:
+    build: ./api
+    volumes:
+      - ./api:/var/www/html
+    ports:
+      - '8905:80'
+
+  front:
+    image: php:7.1-apache
+    volumes:
+      - ./front:/var/www/html
+    ports:
+      - '8906:80'
+

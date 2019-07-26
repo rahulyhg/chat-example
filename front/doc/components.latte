@@ -1,0 +1,14 @@
+{foreach $components as $component}
+<div n:class="'component', !$component['attributes'] && !$component['subcomponents'] ? 'todo'">
+	<h1>{$component['title']} ({$component['tag']}/{$component['nestedTag']})</h1>
+
+	<table>
+		<tr n:foreach="$component['attributes'] as $attribute"><td>{$attribute['key']}</td><td>{=json_encode($attribute['value'])}</td></tr>
+	</table>
+
+	<ul>
+		<li n:foreach="$component['subcomponents'] as $subcomponent">{$subcomponent}</li>
+	</ul>
+
+</div>
+{/foreach}

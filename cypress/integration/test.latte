@@ -1,0 +1,16 @@
+describe('{$name}', () => {
+	before(() => {
+		cy.visit('http://localhost:8906');		
+	})
+	it('should {$name}', () => {
+{foreach $steps as $step}
+		cy.get('{if strpos($step['selector'], '.')
+				}[data-test="{$step['selector']|replaceRE,'/\.([0-9]+)/','"]:eq($1)'}{else
+				}[data-test="{$step['selector']}"]{/if}')
+			.should('have.length', 1)
+			.and('be.visible')
+			.{$step['action']}({if $step['param']}'{$step['param']}'{/if});
+
+{/foreach}		
+	})
+})

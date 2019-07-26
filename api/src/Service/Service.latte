@@ -1,0 +1,80 @@
+<?php // Julie automatic generated file
+namespace App\Service;
+
+use App\Entity\{$table|firstUpper}Entity;
+use App\Resource\DbResource;
+
+class {$table|firstUpper}Service extends BaseService {
+
+	public static $instance = null;
+
+	public static function create() {
+		if (!self::$instance) {
+			self::$instance = new self();
+		}
+		return self::$instance;
+	}
+
+	public function newEntity($attributes) {
+		return new {$table|firstUpper}Entity((array) $attributes);
+	}
+
+	public function getAll{$table|firstUpper}($attrs = []) {
+		if (!$attrs) {
+			$attrs = [];
+		}
+		return $this->db->select('*')->from('{$table}')->where($attrs)->fetchAssoc('id');
+	}
+
+	public function get{$table|firstUpper}(array $attrs = []) {
+		return $this->db->select('*')->from('{$table}')->where($attrs)->fetch();
+	}
+
+	public function post{$table|firstUpper}({$table|firstUpper}Entity ${$table}Entity, array $user) {
+		if (array_key_exists('id', $user)) {
+			${$table}Entity->user_id($user['id']);
+		}
+		$this->db->insert('{$table}', ${$table}Entity->assign())->execute();
+		return $this->db->getInsertId();
+	}
+
+	public function put{$table|firstUpper}({$table|firstUpper}Entity ${$table}Entity, array $user) {
+		$query = $this->db->update('{$table}', ${$table}Entity->assign())->where(['id' => ${$table}Entity->getId()]);
+		switch ($user['role']) {
+			case 'owner':
+				$query = $query->where('user_id = %i', $user['id']);
+				break;
+
+			case 'manager':
+				break;
+		}
+		$query->execute();
+	}
+
+	public function delete{$table|firstUpper}({$table|firstUpper}Entity ${$table}Entity, array $user) {
+		$query = $this->db->delete('{$table}')->where(['id' => ${$table}Entity->getId()]);
+		switch ($user['role']) {
+			case 'owner':
+				$query = $query->where('user_id = %i', $user['id']);
+				break;
+
+			case 'manager':
+				break;
+		}
+		$query->execute();
+	}
+
+	public function delete{$table|firstUpper}By(array $attrs, array $user) {
+		$query = $this->db->delete('{$table}')->where($attrs);
+		switch ($user['role']) {
+			case 'owner':
+				$query = $query->where('user_id = %i', $user['id']);
+				break;
+
+			case 'manager':
+				break;
+		}
+		$query->execute();
+	}
+
+}

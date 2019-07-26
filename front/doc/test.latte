@@ -1,0 +1,16 @@
+describe('Julietest', () => {
+
+{foreach $tests as $test}
+	it('Should {$test['name']}', () => {
+		cy.visit('http://julie.zbynekrybicka.cz')
+{foreach $test['steps'] as $step}
+		cy.get('{$step['selector']|replaceRE,'/(\w+)(\.([0-9]+))?/', '[data-test="$1"]:eq(\' + (\'$3\' ? \'$3\' : \'0\') + \')'}')
+			.should('have.length', 1)
+			.and('be.visible')
+			{if $step['action'] && $step['action'] === 'datetime'}.click().then(input => input.val('{$step['param']}')).click(){elseif 
+				$step['action']}.{$step['action']}({if $step['param']}'{$step['param']}'{/if}){/if}
+{/foreach}
+	})
+{/foreach}
+
+})

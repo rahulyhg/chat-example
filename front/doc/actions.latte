@@ -1,0 +1,19 @@
+<div class="action">
+	<h1>Default structure</h1>
+	{foreach $structure['data'] as $data}
+		<div>{$data['path']} = {$data['value']}</div>
+	{/foreach}
+</div>
+
+{foreach $structure['actions'] as $action}
+	<div class="action">
+		<h1>{$action['title']}</h1>
+		<p>{if $action['ajax']}Ajax: {$action['ajax']}{/if}</p>
+
+		{foreach $action['changes'] as $change}
+			<p>{if $change['value'] === 'delete'}var {$change['path']|replaceRE,'/\[.*/', ''} = Object.assign({}, {$change['path']|replaceRE,'/\[.*/', ''})
+			delete {$change['path']}
+			{$change['path']|replaceRE,'/\[.*/', ''} = {$change['path']|replaceRE,'/\[.*/', ''}{elseif $change['value'] === 'dummy'}{$change['path']}{else}{$change['path']} = {$change['value']|store}{/if}</p>
+		{/foreach}
+	</div>
+{/foreach}
